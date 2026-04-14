@@ -50,12 +50,12 @@ CANAL_OPTIONS = [
 ENUMS = {
     "canal": CANAL_OPTIONS,
     "Interview status": [
-        "Not arrived",
         "Conducted",
+        "Not arrived",
         "cancel",
-        "NA",
-        "Reschedule by driver",
         "Reschedule by LAFA",
+        "Reschedule by driver",
+        "N/A",
     ],
     "interview result": [],  # definir cuando tengas lista cerrada
     "background approved": ["yes", "no", "NA"],

@@ -179,6 +179,39 @@ def _normalize_canal_value(value) -> str:
     return normalized if normalized in CANAL_OPTIONS else "N/A"
 
 
+INTERVIEW_STATUS_OPTIONS = {
+    "Conducted",
+    "Not arrived",
+    "cancel",
+    "Reschedule by LAFA",
+    "Reschedule by driver",
+    "N/A",
+}
+
+INTERVIEW_STATUS_NORMALIZATION = {
+    "": "N/A",
+    "n/a": "N/A",
+    "na": "N/A",
+    "conducted": "Conducted",
+    "not arrived": "Not arrived",
+    "cancel": "cancel",
+    "reschedule by lafa": "Reschedule by LAFA",
+    "reschedule by driver": "Reschedule by driver",
+}
+
+
+def _normalize_interview_status(value) -> str:
+    if value is None or pd.isna(value):
+        return "N/A"
+    normalized = str(value).strip()
+    if not normalized:
+        return "N/A"
+    canonical = INTERVIEW_STATUS_NORMALIZATION.get(normalized.lower())
+    if canonical:
+        return canonical
+    return normalized if normalized in INTERVIEW_STATUS_OPTIONS else "N/A"
+
+
 def _build_date_week_label(value) -> str:
     if value is None or pd.isna(value):
         return ""
@@ -222,6 +255,8 @@ def finalize_pilot_frame(df: pd.DataFrame) -> pd.DataFrame:
         out[col] = out[col].replace({"nan": "", "NaT": "", "<NA>": ""})
     if "canal" in out.columns:
         out["canal"] = out["canal"].map(_normalize_canal_value)
+    if "Interview status" in out.columns:
+        out["Interview status"] = out["Interview status"].map(_normalize_interview_status)
     return out
 
 

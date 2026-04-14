@@ -333,7 +333,31 @@ def main() -> None:
     if "canal" in column_config:
         candidate_column_config["canal"] = column_config["canal"]
 
-    tab_general, tab_candidate = st.tabs(["Vista general", "Datos del candidato"])
+    attendance_columns = [
+        "AppKey",
+        "Invitee Name",
+        "Start Date",
+        "Date + Week",
+        "canal",
+        "Interview status",
+    ]
+    attendance_column_config = {
+        "AppKey": column_config["AppKey"],
+        "Start Date": column_config["Start Date"],
+        "Date + Week": st.column_config.TextColumn(
+            "Date + Week",
+            help="Referencia rápida de fecha y semana ISO.",
+            disabled=True,
+        ),
+    }
+    if "canal" in column_config:
+        attendance_column_config["canal"] = column_config["canal"]
+    if "Interview status" in column_config:
+        attendance_column_config["Interview status"] = column_config["Interview status"]
+
+    tab_general, tab_candidate, tab_attendance = st.tabs(
+        ["Vista general", "Datos del candidato", "1. Asistencia"]
+    )
 
     with tab_general:
         st.subheader(f"Registros: {len(df_view)}")
@@ -362,6 +386,21 @@ def main() -> None:
         )
         if st.button("Aplicar cambios de datos del candidato", key="apply_candidate"):
             _apply_edited_view(edited_candidate, "Datos del candidato actualizados.")
+
+    with tab_attendance:
+        st.subheader(f"1. Asistencia: {len(df_view)} registros")
+        st.caption("Aquí se concentra la asistencia del candidato y su estatus de entrevista.")
+        attendance_df = df_view[attendance_columns].copy()
+        edited_attendance = st.data_editor(
+            attendance_df,
+            column_config=attendance_column_config,
+            hide_index=True,
+            use_container_width=True,
+            num_rows="dynamic",
+            key="editor_attendance",
+        )
+        if st.button("Aplicar cambios de asistencia", key="apply_attendance"):
+            _apply_edited_view(edited_attendance, "Asistencia actualizada.")
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     export_name = f"captura_{ts}.xlsx"
