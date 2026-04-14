@@ -185,6 +185,13 @@ def apply_slice(name: str, df: pd.DataFrame) -> pd.DataFrame:
         return df
 
 
+def _apply_edited_view(edited: pd.DataFrame, success_message: str) -> None:
+    full = _merge_edited_into_full(st.session_state.df.copy(), edited)
+    st.session_state.df = ensure_dataframe(full)
+    st.success(success_message)
+    st.rerun()
+
+
 def main() -> None:
     st.title("APP PILOTO — entrevistas")
     st.caption(
@@ -290,8 +297,6 @@ def main() -> None:
 
     df_view = apply_slice(slice_name, df)
 
-    st.subheader(f"Registros: {len(df_view)}")
-
     column_config = {
         "AppKey": st.column_config.TextColumn(
             "AppKey",
@@ -307,20 +312,54 @@ def main() -> None:
         if options:
             column_config[col] = st.column_config.SelectboxColumn(col, options=options)
 
-    edited = st.data_editor(
-        df_view,
-        column_config=column_config,
-        hide_index=True,
-        use_container_width=True,
-        num_rows="dynamic",
-        key="editor",
-    )
+    candidate_columns = [
+        "AppKey",
+        "Invitee Name",
+        "Correo",
+        "Numeros",
+        "Start Date",
+        "Date + Week",
+        "canal",
+    ]
+    candidate_column_config = {
+        "AppKey": column_config["AppKey"],
+        "Start Date": column_config["Start Date"],
+        "Date + Week": st.column_config.TextColumn(
+            "Date + Week",
+            help="Referencia rápida de fecha y semana ISO.",
+            disabled=True,
+        ),
+    }
 
-    if st.button("Aplicar cambios de esta vista a la tabla completa"):
-        full = _merge_edited_into_full(st.session_state.df.copy(), edited)
-        st.session_state.df = ensure_dataframe(full)
-        st.success("Tabla en sesión actualizada.")
-        st.rerun()
+    tab_general, tab_candidate = st.tabs(["Vista general", "Datos del candidato"])
+
+    with tab_general:
+        st.subheader(f"Registros: {len(df_view)}")
+        edited_general = st.data_editor(
+            df_view,
+            column_config=column_config,
+            hide_index=True,
+            use_container_width=True,
+            num_rows="dynamic",
+            key="editor_general",
+        )
+        if st.button("Aplicar cambios de esta vista a la tabla completa", key="apply_general"):
+            _apply_edited_view(edited_general, "Vista general actualizada.")
+
+    with tab_candidate:
+        st.subheader(f"Datos del candidato: {len(df_view)} registros")
+        st.caption("Aquí solo se muestran los datos base de contacto y programación del candidato.")
+        candidate_df = df_view[candidate_columns].copy()
+        edited_candidate = st.data_editor(
+            candidate_df,
+            column_config=candidate_column_config,
+            hide_index=True,
+            use_container_width=True,
+            num_rows="dynamic",
+            key="editor_candidate",
+        )
+        if st.button("Aplicar cambios de datos del candidato", key="apply_candidate"):
+            _apply_edited_view(edited_candidate, "Datos del candidato actualizados.")
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     export_name = f"captura_{ts}.xlsx"
