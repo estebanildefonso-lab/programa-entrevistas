@@ -10,7 +10,9 @@ COLUMNS = [
     "ENTREVISTADOR",
     "Invitee Name",
     "Correo",
-    "Start Date & Time",
+    "Numeros",
+    "Start Date",
+    "Date + Week",
     "canal",
     "Docs before interview",
     "Interview status",
@@ -23,11 +25,11 @@ COLUMNS = [
 # Identidad del registro: la app trata cada fila por AppKey (no por la posición en la tabla).
 RECORD_ID_COLUMNS = ("AppKey",)
 
-# Búsqueda: puedes escribir AppKey, nombre o correo.
-SEARCH_COLUMNS = ("AppKey", "Invitee Name", "Correo")
+# Búsqueda: puedes escribir AppKey, nombre, correo o número.
+SEARCH_COLUMNS = ("AppKey", "Invitee Name", "Correo", "Numeros")
 
 # Filtro por año / semana ISO: siempre sobre la fecha de la cita (entrevista)
-DATE_FILTER_COLUMN = "Start Date & Time"
+DATE_FILTER_COLUMN = "Start Date"
 
 ENUMS = {
     "Interview status": [

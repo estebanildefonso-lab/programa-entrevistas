@@ -34,6 +34,7 @@ def sample_dataframe(n: int = 12) -> pd.DataFrame:
         r["AppKey"] = f"APP-{i:05d}"
         r["Invitee Name"] = f"Candidato Demo {i}"
         r["Correo"] = f"candidato{i}@ejemplo.test"
+        r["Numeros"] = f"5510000{i:03d}"
         r["Interview status"] = "Not arrived" if i % 3 else "Conducted"
         r["background approved"] = "NA"
         r["Driving test"] = "NA"
@@ -41,9 +42,9 @@ def sample_dataframe(n: int = 12) -> pd.DataFrame:
         # Fechas de demo (2025 / 2026) para probar filtros por semana
         m = ((i - 1) % 12) + 1
         if i % 2:
-            r["Start Date & Time"] = f"2025-{m:02d}-10 09:00:00"
+            r["Start Date"] = f"2025-{m:02d}-10 09:00:00"
         else:
-            r["Start Date & Time"] = f"2026-{m:02d}-15 11:00:00"
+            r["Start Date"] = f"2026-{m:02d}-15 11:00:00"
         rows.append(r)
     return finalize_pilot_frame(pd.DataFrame(rows, columns=COLUMNS))
 
@@ -111,12 +112,29 @@ def _align_to_expected_columns(df: pd.DataFrame) -> pd.DataFrame:
     lower_to_actual = {}
     for c in df.columns:
         lower_to_actual.setdefault(c.lower(), c)
+    aliases = {
+        "Start Date": ("Start Date & Time",),
+    }
     series_list = []
     for exp in COLUMNS:
         if exp in df.columns:
             series_list.append(df[exp])
         elif exp.lower() in lower_to_actual:
             series_list.append(df[lower_to_actual[exp.lower()]])
+        elif exp in aliases:
+            matched_alias = next(
+                (
+                    alias
+                    for alias in aliases[exp]
+                    if alias in df.columns or alias.lower() in lower_to_actual
+                ),
+                None,
+            )
+            if matched_alias is not None:
+                actual = matched_alias if matched_alias in df.columns else lower_to_actual[matched_alias.lower()]
+                series_list.append(df[actual])
+            else:
+                series_list.append(pd.Series([""] * len(df), dtype=object))
         else:
             series_list.append(pd.Series([""] * len(df), dtype=object))
     out = pd.concat(series_list, axis=1)
@@ -124,7 +142,17 @@ def _align_to_expected_columns(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-DATE_PARSE_COLUMNS = ("Start Date & Time",)
+DATE_PARSE_COLUMNS = ("Start Date",)
+
+
+def _build_date_week_label(value) -> str:
+    if value is None or pd.isna(value):
+        return ""
+    parsed = pd.to_datetime(value, errors="coerce")
+    if pd.isna(parsed):
+        return ""
+    iso = parsed.isocalendar()
+    return f"{parsed.strftime('%Y-%m-%d')} · Semana {int(iso.week)}"
 
 
 def finalize_pilot_frame(df: pd.DataFrame) -> pd.DataFrame:
@@ -148,6 +176,11 @@ def finalize_pilot_frame(df: pd.DataFrame) -> pd.DataFrame:
             if parsed.notna().sum() < max(1, len(ser) // 5):
                 parsed = pd.to_datetime(ser, errors="coerce", dayfirst=True)
             out[col] = parsed
+    if "Date + Week" in out.columns and "Start Date" in out.columns:
+        current_labels = out["Date + Week"].copy()
+        generated_labels = out["Start Date"].map(_build_date_week_label)
+        missing_mask = current_labels.isna() | (current_labels.astype(str).str.strip() == "")
+        out.loc[missing_mask, "Date + Week"] = generated_labels[missing_mask]
     for col in COLUMNS:
         if col in DATE_PARSE_COLUMNS:
             continue

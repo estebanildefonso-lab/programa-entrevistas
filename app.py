@@ -189,7 +189,7 @@ def main() -> None:
     st.title("APP PILOTO — entrevistas")
     st.caption(
         "Cada registro se identifica por **AppKey**. "
-        "La búsqueda acepta AppKey, nombre o correo. Puedes usar Google Sheets como fuente remota "
+        "La búsqueda acepta AppKey, nombre, correo o número. Puedes usar Google Sheets como fuente remota "
         "y descargar la salida actualizada como Excel."
     )
 
@@ -242,8 +242,8 @@ def main() -> None:
         slice_name = st.selectbox("Vista / etapa", list(SLICES.keys()))
 
     search = st.text_input(
-        "Buscar por AppKey, nombre o correo",
-        placeholder="Ej. APP-00042, Juan o @dominio",
+        "Buscar por AppKey, nombre, correo o número",
+        placeholder="Ej. APP-00042, Juan, 5512345678 o @dominio",
     )
 
     df = st.session_state.df.copy()
@@ -252,7 +252,7 @@ def main() -> None:
 
     st.markdown("**Filtro por semana (año ISO + semana ISO)**")
     st.caption(
-        "Siempre según **Start Date & Time**. Año y semana son **ISO**. "
+        "Siempre según **Start Date**. Año y semana son **ISO**. "
         "Solo se listan **años y semanas que ya tienen al menos una entrevista** en tus datos "
         "(no aparecen semanas vacías ni meses sin registros)."
     )
