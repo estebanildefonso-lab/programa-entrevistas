@@ -31,7 +31,24 @@ SEARCH_COLUMNS = ("AppKey", "Invitee Name", "Correo", "Numeros")
 # Filtro por año / semana ISO: siempre sobre la fecha de la cita (entrevista)
 DATE_FILTER_COLUMN = "Start Date"
 
+CANAL_OPTIONS = [
+    "Facebook",
+    "DiDi Campaign",
+    "DiDi Call Center",
+    "DIDI Premier",
+    "Referidos",
+    "repeated",
+    "LTO",
+    "Indeed",
+    "CompuTrabajo",
+    "Portal del trabajo",
+    "Nexiu",
+    "Reingreso",
+    "N/A",
+]
+
 ENUMS = {
+    "canal": CANAL_OPTIONS,
     "Interview status": [
         "Not arrived",
         "Conducted",

@@ -10,6 +10,7 @@ from urllib.request import Request, urlopen
 import pandas as pd
 
 from config import (
+    CANAL_OPTIONS,
     COLUMNS,
     DATA_DIR,
     GOOGLE_SHEET_CSV_URL,
@@ -144,6 +145,39 @@ def _align_to_expected_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 DATE_PARSE_COLUMNS = ("Start Date",)
 
+CANAL_NORMALIZATION = {
+    "": "N/A",
+    "n/a": "N/A",
+    "na": "N/A",
+    "facebook": "Facebook",
+    "didi campaign": "DiDi Campaign",
+    "didi call center": "DiDi Call Center",
+    "didi premier": "DIDI Premier",
+    "referidos": "Referidos",
+    "repeated": "repeated",
+    "lto": "LTO",
+    "lto event": "LTO",
+    "indeed": "Indeed",
+    "computrabajo": "CompuTrabajo",
+    "portal del trabajo": "Portal del trabajo",
+    "nexiu": "Nexiu",
+    "reingreso": "Reingreso",
+    "not found": "N/A",
+    "volante": "N/A",
+}
+
+
+def _normalize_canal_value(value) -> str:
+    if value is None or pd.isna(value):
+        return "N/A"
+    normalized = str(value).strip()
+    if not normalized:
+        return "N/A"
+    canonical = CANAL_NORMALIZATION.get(normalized.lower())
+    if canonical:
+        return canonical
+    return normalized if normalized in CANAL_OPTIONS else "N/A"
+
 
 def _build_date_week_label(value) -> str:
     if value is None or pd.isna(value):
@@ -186,6 +220,8 @@ def finalize_pilot_frame(df: pd.DataFrame) -> pd.DataFrame:
             continue
         out[col] = out[col].map(lambda x: "" if (x is None or (isinstance(x, float) and pd.isna(x))) else str(x).strip())
         out[col] = out[col].replace({"nan": "", "NaT": "", "<NA>": ""})
+    if "canal" in out.columns:
+        out["canal"] = out["canal"].map(_normalize_canal_value)
     return out
 
 

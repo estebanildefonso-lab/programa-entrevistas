@@ -330,6 +330,8 @@ def main() -> None:
             disabled=True,
         ),
     }
+    if "canal" in column_config:
+        candidate_column_config["canal"] = column_config["canal"]
 
     tab_general, tab_candidate = st.tabs(["Vista general", "Datos del candidato"])
 
