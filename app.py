@@ -355,8 +355,31 @@ def main() -> None:
     if "Interview status" in column_config:
         attendance_column_config["Interview status"] = column_config["Interview status"]
 
-    tab_general, tab_candidate, tab_attendance = st.tabs(
-        ["Vista general", "Datos del candidato", "1. Asistencia"]
+    interview_background_columns = [
+        "AppKey",
+        "Invitee Name",
+        "Start Date",
+        "Date + Week",
+        "canal",
+        "interview result",
+        "background approved",
+    ]
+    interview_background_column_config = {
+        "AppKey": column_config["AppKey"],
+        "Start Date": column_config["Start Date"],
+        "Date + Week": st.column_config.TextColumn(
+            "Date + Week",
+            help="Referencia rápida de fecha y semana ISO.",
+            disabled=True,
+        ),
+    }
+    if "canal" in column_config:
+        interview_background_column_config["canal"] = column_config["canal"]
+    if "background approved" in column_config:
+        interview_background_column_config["background approved"] = column_config["background approved"]
+
+    tab_general, tab_candidate, tab_attendance, tab_interview_background = st.tabs(
+        ["Vista general", "Datos del candidato", "1. Asistencia", "2. Entrevista y background"]
     )
 
     with tab_general:
@@ -401,6 +424,25 @@ def main() -> None:
         )
         if st.button("Aplicar cambios de asistencia", key="apply_attendance"):
             _apply_edited_view(edited_attendance, "Asistencia actualizada.")
+
+    with tab_interview_background:
+        interview_background_df = df_view[df_view["Interview status"] == "Conducted"].copy()
+        st.subheader(f"2. Entrevista y background: {len(interview_background_df)} registros")
+        st.caption("Aquí solo aparecen candidatos cuya asistencia ya quedó marcada como **Conducted**.")
+        interview_background_df = interview_background_df[interview_background_columns]
+        edited_interview_background = st.data_editor(
+            interview_background_df,
+            column_config=interview_background_column_config,
+            hide_index=True,
+            use_container_width=True,
+            num_rows="dynamic",
+            key="editor_interview_background",
+        )
+        if st.button("Aplicar cambios de entrevista y background", key="apply_interview_background"):
+            _apply_edited_view(
+                edited_interview_background,
+                "Entrevista y background actualizados.",
+            )
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     export_name = f"captura_{ts}.xlsx"
