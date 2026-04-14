@@ -42,7 +42,7 @@ def _strip_str(x) -> str:
 
 
 def _find_row_index(full: pd.DataFrame, row: pd.Series) -> int | None:
-    """Localiza la fila en `full` por SourceUUID o AppKey (misma persona = mismo ID)."""
+    """Localiza la fila en `full` por AppKey."""
     for col in RECORD_ID_COLUMNS:
         val = _strip_str(row.get(col, ""))
         if not val:
@@ -188,8 +188,8 @@ def apply_slice(name: str, df: pd.DataFrame) -> pd.DataFrame:
 def main() -> None:
     st.title("APP PILOTO — entrevistas")
     st.caption(
-        "Cada registro se identifica por **SourceUUID** (ID del origen) y **AppKey** (clave del piloto). "
-        "La búsqueda acepta ID, nombre o correo. Puedes usar Google Sheets como fuente remota "
+        "Cada registro se identifica por **AppKey**. "
+        "La búsqueda acepta AppKey, nombre o correo. Puedes usar Google Sheets como fuente remota "
         "y descargar la salida actualizada como Excel."
     )
 
@@ -242,8 +242,8 @@ def main() -> None:
         slice_name = st.selectbox("Vista / etapa", list(SLICES.keys()))
 
     search = st.text_input(
-        "Buscar por ID (AppKey / SourceUUID), nombre o correo",
-        placeholder="Ej. APP-00042, uuid…, Juan o @dominio",
+        "Buscar por AppKey, nombre o correo",
+        placeholder="Ej. APP-00042, Juan o @dominio",
     )
 
     df = st.session_state.df.copy()
@@ -296,10 +296,6 @@ def main() -> None:
         "AppKey": st.column_config.TextColumn(
             "AppKey",
             help="Clave estable del piloto; enlaza la fila al exportar y al editar.",
-        ),
-        "SourceUUID": st.column_config.TextColumn(
-            "SourceUUID",
-            help="ID único del sistema origen (persona/evento). Prioridad para saber qué fila es.",
         ),
     }
     for col, options in ENUMS.items():

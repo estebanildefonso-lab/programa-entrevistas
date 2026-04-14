@@ -7,13 +7,10 @@ import os
 # Orden fijo = encabezados de la hoja normalizada
 COLUMNS = [
     "AppKey",
-    "SourceUUID",
     "ENTREVISTADOR",
     "Invitee Name",
     "Correo",
-    "Event Type Name",
     "Start Date & Time",
-    "Event Created Date & Time",
     "canal",
     "Docs before interview",
     "Interview status",
@@ -21,18 +18,13 @@ COLUMNS = [
     "background approved",
     "Driving test",
     "status Driver",
-    "documents for contract",
-    "Reason of rejection or decline",
-    "onboarding date",
-    "Test Drive",
 ]
 
-# Identidad del registro: la app trata cada fila por su ID (no por la posición en la tabla).
-# Prioridad: SourceUUID = ID del sistema origen; AppKey = clave estable del piloto (APP-00001).
-RECORD_ID_COLUMNS = ("SourceUUID", "AppKey")
+# Identidad del registro: la app trata cada fila por AppKey (no por la posición en la tabla).
+RECORD_ID_COLUMNS = ("AppKey",)
 
-# Búsqueda: puedes escribir ID (AppKey o SourceUUID), nombre o correo.
-SEARCH_COLUMNS = ("AppKey", "SourceUUID", "Invitee Name", "Correo")
+# Búsqueda: puedes escribir AppKey, nombre o correo.
+SEARCH_COLUMNS = ("AppKey", "Invitee Name", "Correo")
 
 # Filtro por año / semana ISO: siempre sobre la fecha de la cita (entrevista)
 DATE_FILTER_COLUMN = "Start Date & Time"

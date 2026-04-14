@@ -32,7 +32,6 @@ def sample_dataframe(n: int = 12) -> pd.DataFrame:
     for i in range(1, n + 1):
         r = _empty_row()
         r["AppKey"] = f"APP-{i:05d}"
-        r["SourceUUID"] = f"uuid-demo-{i}"
         r["Invitee Name"] = f"Candidato Demo {i}"
         r["Correo"] = f"candidato{i}@ejemplo.test"
         r["Interview status"] = "Not arrived" if i % 3 else "Conducted"
@@ -45,7 +44,6 @@ def sample_dataframe(n: int = 12) -> pd.DataFrame:
             r["Start Date & Time"] = f"2025-{m:02d}-10 09:00:00"
         else:
             r["Start Date & Time"] = f"2026-{m:02d}-15 11:00:00"
-        r["Event Created Date & Time"] = r["Start Date & Time"]
         rows.append(r)
     return finalize_pilot_frame(pd.DataFrame(rows, columns=COLUMNS))
 
@@ -126,7 +124,7 @@ def _align_to_expected_columns(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-DATE_PARSE_COLUMNS = ("Start Date & Time", "Event Created Date & Time")
+DATE_PARSE_COLUMNS = ("Start Date & Time",)
 
 
 def finalize_pilot_frame(df: pd.DataFrame) -> pd.DataFrame:
