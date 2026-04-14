@@ -152,7 +152,7 @@ def _build_date_week_label(value) -> str:
     if pd.isna(parsed):
         return ""
     iso = parsed.isocalendar()
-    return f"{parsed.strftime('%Y-%m-%d')} · Semana {int(iso.week)}"
+    return f"{parsed.strftime('%d-%m-%Y')} · Semana {int(iso.week)}"
 
 
 def finalize_pilot_frame(df: pd.DataFrame) -> pd.DataFrame:
@@ -168,14 +168,14 @@ def finalize_pilot_frame(df: pd.DataFrame) -> pd.DataFrame:
             continue
         ser = out[col]
         if pd.api.types.is_datetime64_any_dtype(ser):
-            continue
-        if pd.api.types.is_numeric_dtype(ser):
-            out[col] = pd.to_datetime(ser, errors="coerce", unit="d", origin="1899-12-30")
+            parsed = ser
+        elif pd.api.types.is_numeric_dtype(ser):
+            parsed = pd.to_datetime(ser, errors="coerce", unit="d", origin="1899-12-30")
         else:
             parsed = pd.to_datetime(ser, errors="coerce", dayfirst=False)
             if parsed.notna().sum() < max(1, len(ser) // 5):
                 parsed = pd.to_datetime(ser, errors="coerce", dayfirst=True)
-            out[col] = parsed
+        out[col] = pd.to_datetime(parsed, errors="coerce").dt.date
     if "Date + Week" in out.columns and "Start Date" in out.columns:
         current_labels = out["Date + Week"].copy()
         generated_labels = out["Start Date"].map(_build_date_week_label)

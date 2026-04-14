@@ -297,6 +297,11 @@ def main() -> None:
             "AppKey",
             help="Clave estable del piloto; enlaza la fila al exportar y al editar.",
         ),
+        "Start Date": st.column_config.DateColumn(
+            "Start Date",
+            format="DD-MM-YYYY",
+            help="Fecha de la entrevista sin hora.",
+        ),
     }
     for col, options in ENUMS.items():
         if options:
